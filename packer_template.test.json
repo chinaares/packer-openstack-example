@@ -1,0 +1,28 @@
+{
+  "builders": [
+    {
+      "type": "openstack",
+	  "flavor": "m1.small",
+      "ssh_username": "ubuntu",
+      "image_name": "ubuntu-14.04-server-cloudimg-amd64-test",
+      "source_image_name": "ubuntu-14.04-server-cloudimg-amd64",
+	  "networks": "61f0acc4-40bd-4a65-8a29-978dd10bcf36",
+	  "floating_ip_pool": "admin_floating_net",
+	  "use_floating_ip": true,
+	  "security_groups": ["default", "ssh", "docker-machine"],
+	  "username": "admin",
+	  "identity_endpoint": "http://192.161.14.184:5000/v2.0",
+	  "tenant_name": "admin",
+      "password": "admin",
+	  "insecure": "true",
+	  "ssh_timeout": "15m"
+    }
+  ],
+  "provisioners": [{
+  	"type": "shell",
+    "inline": [
+      "sleep 3",
+      "echo provision ok!!!"
+    ]
+  }]
+}

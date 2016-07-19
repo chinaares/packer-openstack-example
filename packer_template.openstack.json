@@ -1,0 +1,34 @@
+{
+  "builders": [
+    {
+      "type": "openstack",
+	  "flavor": "m1.small",
+      "ssh_username": "ubuntu",
+	  "ssh_timeout": "30m",
+      "image_name": "ubuntu-14.04-server-cloudimg-amd64-docker",
+      "source_image_name": "ubuntu-14.04-server-cloudimg-amd64",
+	  "networks": "61f0acc4-40bd-4a65-8a29-978dd10bcf36",
+	  "floating_ip_pool": "admin_floating_net",
+	  "use_floating_ip": true,
+	  "security_groups": ["default", "ssh", "docker-machine"],
+	  "username": "admin",
+	  "identity_endpoint": "http://192.161.14.184:5000/v2.0",
+	  "tenant_name": "admin",
+      "password": "admin",
+	  "insecure": "true",
+	  "user_data_file": "ubuntu-user-data.txt"
+    }
+  ],
+  "provisioners": [{
+  	"type": "shell",
+    "inline": [
+      "sleep 3",
+	  "#curl http://apt.dockerproject.org/gpg > docker.gpg.key",
+	  "curl http://192.161.14.180/docker/docker.gpg.key > docker.gpg.key && echo \"c836dc13577c6f7c133ad1db1a2ee5f41ad742d11e4ac860d8e658b2b39e6ac1 docker.gpg.key\" | sha256sum -c && sudo apt-key add docker.gpg.key && rm docker.gpg.key",
+	  "curl -sSL http://192.161.14.180/docker/engine-install.sh | sh",
+      "sudo usermod -a -G docker ubuntu",
+      "echo \"install docker ok!!\"",
+      "echo provision finished."
+    ]
+  }]
+}
