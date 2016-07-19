@@ -1,0 +1,60 @@
+#!/bin/sh
+passwd ubuntu<<EOF
+ubuntu
+ubuntu
+EOF
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+service ssh restart
+
+sudo sed -i '/registry\.sumapay\.com$/d' /etc/hosts
+echo '192.161.14.101  registry.sumapay.com' | sudo tee -a /etc/hosts
+
+echo '
+export http_proxy=http://192.166.69.12:1818
+export https_proxy=$http_proxy
+export ftp_proxy=$http_proxy
+export rsync_proxy=$http_proxy
+export no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com"
+' | sudo tee -a /home/ubuntu/.bashrc
+
+#sudo touch /etc/apt/apt.conf
+#echo '
+#Acquire::http::Proxy "http://192.161.14.179:3142";
+#Acquire::https::Proxy "http://192.161.14.179:3142";
+#Acquire::ftp::Proxy "http://192.161.14.179:3142";
+#' | sudo tee -a /etc/apt/apt.conf
+
+sudo touch /etc/apt/apt.conf.d/90-apt-proxy.conf
+echo '
+Acquire::http::Proxy "http://192.161.14.179:3142";
+Acquire::https::Proxy "http://192.161.14.179:3142";
+Acquire::ftp::Proxy "http://192.161.14.179:3142";
+' | sudo tee -a /etc/apt/apt.conf.d/90-apt-proxy.conf
+
+sudo mv /etc/apt/sources.list /etc/apt/sources.list_bak
+
+if command_exists lsb_release; then
+   Codename="$(lsb_release --codename | cut -f2)"
+fi
+if [ -z "$Codename" ] && [ -r /etc/lsb-release ]; then
+   Codename="$(. /etc/lsb-release && echo "$DISTRIB_CODENAME")"
+fi
+#Codename=$( (lsb_release -a)|awk '{print $2}' |tail -n 1 )
+echo "
+deb http://mirrors.aliyun.com/ubuntu/ ${Codename} main multiverse restricted universe
+deb http://mirrors.aliyun.com/ubuntu/ ${Codename}-backports main multiverse restricted universe
+deb http://mirrors.aliyun.com/ubuntu/ ${Codename}-proposed main multiverse restricted universe
+deb http://mirrors.aliyun.com/ubuntu/ ${Codename}-security main multiverse restricted universe
+deb http://mirrors.aliyun.com/ubuntu/ ${Codename}-updates main multiverse restricted universe
+deb-src http://mirrors.aliyun.com/ubuntu/ ${Codename} main multiverse restricted universe
+deb-src http://mirrors.aliyun.com/ubuntu/ ${Codename}-backports main multiverse restricted universe
+deb-src http://mirrors.aliyun.com/ubuntu/ ${Codename}-proposed main multiverse restricted universe
+deb-src http://mirrors.aliyun.com/ubuntu/ ${Codename}-security main multiverse restricted universe
+deb-src http://mirrors.aliyun.com/ubuntu/ ${Codename}-updates main multiverse restricted universe
+" | sudo tee /etc/apt/sources.list
+#sudo apt-get update
+#sudo apt-get upgrade
+
+#curl -o "docker-engine_1.11.2-0~${Codename}_amd64.deb" "https://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~${Codename}_amd64.deb"
+#sudo dpkg -i "docker-engine_1.11.2-0~${Codename}_amd64.deb"
+#echo "execute command to run docker without root: sudo usermod -aG docker ubuntu"
